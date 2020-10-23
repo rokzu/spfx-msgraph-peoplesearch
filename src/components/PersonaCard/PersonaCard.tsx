@@ -9,7 +9,6 @@ import { ITheme } from '@uifabric/styling';
 import { TemplateService } from '../../services/TemplateService/TemplateService';
 import { isEmpty } from '@microsoft/sp-lodash-subset';
 
-
 export class PersonaCard extends React.Component<IPersonaCardProps,IPersonaCardState> {
   private determinePersonaConfig(): IPersonaCardProps {
     let processedProps: IPersonaCardProps = this.props;
@@ -79,8 +78,19 @@ export class PersonaCard extends React.Component<IPersonaCardProps,IPersonaCardS
       persona.imageUrl = this.props.item.photoUrl;
     }
 
-    return <Persona {...persona} size={parseInt(this.props.personaSize)} />;
+    return (
+      <React.Fragment>
+        <div>
+          <Persona {...persona} size={parseInt(this.props.personaSize)} />
+          
+        </div>
+      </React.Fragment>
+    );
   }
+
+
+ 
+  
 
   /**
    *

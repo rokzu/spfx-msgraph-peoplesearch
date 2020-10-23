@@ -3,12 +3,18 @@
     "@odata.count": 31,
     "value": [
         {
+            "businessPhones": [
+                "01 9987 992",
+                "01 9987 993",
+                "01 9987 994",
+                "01 9987 995"
+            ],
             "id": "87d349ed-44d7-43e1-9a83-5f2406dee5bd",
             "userPrincipalName": "AdeleV@M365x214355.onmicrosoft.com",
             "displayName": "Adele Vance",
             "mail": "AdeleV@M365x214355.onmicrosoft.com",
             "jobTitle": "Product Marketing Manager",
-            "mobilePhone": null,
+            "mobilePhone":"070 555 555",
             "companyName": null
         },
         {

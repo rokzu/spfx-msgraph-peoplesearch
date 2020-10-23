@@ -98,12 +98,56 @@ export class TemplateService {
 
         // Use configuration
         fieldsConfiguration.map(configuration => {
-
-            let processedValue = item[configuration.value];
+            let processedValue = TemplateService._getFieldValue(item, configuration.value);               //item[configuration.value];
             processedProps[configuration.field] = processedValue;
         });
 
         return processedProps as T;
+    }
+
+    private static _getFieldValue(item: any, fieldName: string): string {
+
+        if (fieldName == "" || fieldName == null){
+            return null;
+        }
+
+        let fields = fieldName.split(",");
+
+        if (fields.length == 0){
+            return null;
+        }
+
+        if (fields.length == 1){
+            return item[fields[0]];
+        }
+
+        let returnValue = "";
+
+        fields.forEach(field => {
+            let itemFieldName = field.trim();
+            let val = item[itemFieldName];
+            if (Array.isArray(val))
+            {
+                val.forEach(arrayValue => {
+                    if (arrayValue != null){
+                        returnValue = returnValue + arrayValue + ", ";
+                    }
+                });
+            }
+            else{
+                if (item[itemFieldName] != null)
+                {
+                    returnValue = returnValue + item[itemFieldName] + ", ";
+                }
+            }
+        });
+
+        if (returnValue != null && returnValue != "")
+        {
+            returnValue = returnValue.substring(0,returnValue.length-2);
+        }
+
+        return returnValue;
     }
 
     private _getPeopleLayoutFields(properties: IPeopleSearchWebPartProps): IPropertyPaneField<any>[] {

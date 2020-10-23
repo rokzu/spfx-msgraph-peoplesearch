@@ -10,6 +10,7 @@
 
         .documentCardItem {
             margin-right: 15px;
+            margin-bottom: 15px;
             flex: 0 0 345px;
 
             .personaCard {
@@ -22,6 +23,7 @@
 
                     .ms-Persona-primaryText, .ms-Persona-secondaryText, .ms-Persona-optionalText, .ms-Persona-tertiaryText {
                         width: 213px;
+                        white-space: normal;
                     }
                 }
             }

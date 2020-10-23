@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
     "developer": {
-      "name": "Contoso",
+      "name": "EL LJ",
       "privacyUrl": "https://contoso.com/privacy",
       "termsOfUseUrl": "https://contoso.com/terms-of-use",
       "websiteUrl": "https://contoso.com/my-app",
@@ -13,7 +13,13 @@
     "version": "2.2.1.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
-    "isDomainIsolated": false
+    "isDomainIsolated": false,
+    "webApiPermissionRequests": [
+      {
+        "resource": "Microsoft Graph",
+        "scope": "User.Read.All"
+      }     
+    ]
   },
   "paths": {
     "zippedPackage": "solution/spfx-msgraph-peoplesearch.sppkg"
