@@ -9,7 +9,7 @@ import { ISharePointPerson } from "./ISharePointPerson";
 
 export class SharePointSearchService implements ISearchService {
     private _spHttpClient: SPHttpClient;
-	private _spWebUrl: string;
+	  private _spWebUrl: string;
 
     private _selectParameter: string[];
     private _filterParameter: string;
@@ -38,14 +38,20 @@ export class SharePointSearchService implements ISearchService {
     }
 
     public async searchUsers(): Promise<PageCollection<ExtendedUser>> {
+        const blankResult = '{"@odata.count":0, "@odata.nextLink":"", "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users", "value":[]}';
+        const resultObj = JSON.parse(blankResult) as PageCollection<ExtendedUser>;
+
         let query = this.searchParameter;
+        if (isEmpty(query)){
+          return resultObj;
+        }
 
         query = query === null ? "" : query.replace(/'/g, `''`);
 
         const headers: HeadersInit = new Headers();
         headers.append("accept", "application/json;odata.metadata=none");
 
-        let selectFields: string  = "FirstName,LastName,PreferredName,WorkEmail,PictureURL,WorkPhone,MobilePhone,JobTitle,Department,Skills,PastProjects";
+        let selectFields: string  = "FirstName,LastName,UserName,UserProfile_GUID,PreferredName,WorkEmail,PictureURL,WorkPhone,MobilePhone,JobTitle,Department,Skills,PastProjects";
         if (!isEmpty(this.selectParameter)){
             selectFields = this.selectParameter.join(",");
         }
@@ -56,35 +62,47 @@ export class SharePointSearchService implements ISearchService {
         }
 
         const url = `${this._spWebUrl}/_api/search/query?querytext='${query}'&selectproperties='${selectFields}'&sortlist='${orderBy}'&sourceid='b09a7990-05ea-4af9-81ef-edfab16c4e31'&rowlimit=500`;
+        
         let res = await this._spHttpClient.get(url, SPHttpClient.configurations.v1, {
                 headers: headers
         });
 
         let results = await res.json() as ISharePointPeopleSearchResults;
+        
         // convert the SharePoint People Search results to an array of people
-        let people: ISharePointPerson[] = results.PrimaryQueryResult.RelevantResults.Table.Rows.map(r => {
+        let people: ExtendedUser[] = results.PrimaryQueryResult.RelevantResults.Table.Rows.map(r => {
             return {
               name: this._getValueFromSearchResult('PreferredName', r.Cells),
-              firstName: this._getValueFromSearchResult('FirstName', r.Cells),
-              lastName: this._getValueFromSearchResult('LastName', r.Cells),
-              phone: this._getValueFromSearchResult('WorkPhone', r.Cells),
-              mobile: this._getValueFromSearchResult('MobilePhone', r.Cells),
-              email: this._getValueFromSearchResult('WorkEmail', r.Cells),
+              givenName: this._getValueFromSearchResult('FirstName', r.Cells),
+              surname: this._getValueFromSearchResult('LastName', r.Cells),
+              businessPhones: [
+                this._getValueFromSearchResult('WorkPhone', r.Cells)
+              ],
+              mobilePhone: this._getValueFromSearchResult('MobilePhone', r.Cells),
+              mail: this._getValueFromSearchResult('WorkEmail', r.Cells),
               photoUrl: `${this._spWebUrl}${"/_layouts/15/userphoto.aspx?size=M&accountname=" + this._getValueFromSearchResult('WorkEmail', r.Cells)}`,
-              function: this._getValueFromSearchResult('JobTitle', r.Cells),
+              jobTitle: this._getValueFromSearchResult('JobTitle', r.Cells),
               department: this._getValueFromSearchResult('Department', r.Cells),
-              skills: this._getValueFromSearchResult('Skills', r.Cells),
-              projects: this._getValueFromSearchResult('PastProjects', r.Cells)
+              displayName: this._getValueFromSearchResult('PreferredName', r.Cells),
+              userPrincipalName: this._getValueFromSearchResult('UserName', r.Cells),
+              id: this._getValueFromSearchResult('UserProfile_GUID', r.Cells)
             };
           });
 
-        throw new Error("Method not implemented.");
+        resultObj["@odata.count"] = people.length +1;
+        resultObj.value = people;
+
+        return resultObj;
     }
     public async fetchPage(pageLink: string): Promise<PageCollection<ExtendedUser>> {
-        throw new Error("Method not implemented.");
+      const blankResult = '{"@odata.count":0, "@odata.nextLink":"", "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users", "value":[]}';
+      const resultObj = JSON.parse(blankResult) as PageCollection<ExtendedUser>;
+
+      return resultObj;
     }
     public async fetchProfilePictures(users: ExtendedUser[]): Promise<IProfileImage> {
-        throw new Error("Method not implemented.");
+        let returnImages: IProfileImage;        
+        return returnImages;
     }
 
     /**

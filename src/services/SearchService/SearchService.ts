@@ -38,7 +38,6 @@ export class SearchService implements ISearchService {
   }
 
   public async searchUsers(): Promise<PageCollection<ExtendedUser>> {
-    const graphClient = await this._msGraphClientFactory.getClient();
 
     if (isEmpty(this.searchParameter)){
       //do not search
@@ -46,6 +45,9 @@ export class SearchService implements ISearchService {
       const blankResultObj = JSON.parse(blankResult) as PageCollection<ExtendedUser>;
       return blankResultObj;
     }
+    
+
+    const graphClient = await this._msGraphClientFactory.getClient();
 
     let resultQuery = graphClient
       .api('/users')
