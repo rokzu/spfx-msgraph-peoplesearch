@@ -40,6 +40,13 @@ export class SearchService implements ISearchService {
   public async searchUsers(): Promise<PageCollection<ExtendedUser>> {
     const graphClient = await this._msGraphClientFactory.getClient();
 
+    if (isEmpty(this.searchParameter)){
+      //do not search
+      const blankResult = '{"@odata.count":0, "@odata.nextLink":"", "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users", "value":[]}';
+      const blankResultObj = JSON.parse(blankResult) as PageCollection<ExtendedUser>;
+      return blankResultObj;
+    }
+
     let resultQuery = graphClient
       .api('/users')
       .version("v1.0")
@@ -61,14 +68,7 @@ export class SearchService implements ISearchService {
 
     if (!isEmpty(this.searchParameter)) {
       resultQuery = resultQuery.query({ $search: `"displayName:${this.searchParameter}"` });
-    }
-
-    if (isEmpty(this.searchParameter)){
-      //do not search
-      const blankResult = '{"@odata.count":0, "@odata.nextLink":"", "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users", "value":[]}';
-      const blankResultObj = JSON.parse(blankResult) as PageCollection<ExtendedUser>;
-      return blankResultObj;
-    }
+    }    
 
     var searchResults = await resultQuery.get();
     //sort the results
