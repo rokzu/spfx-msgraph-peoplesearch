@@ -81,16 +81,11 @@ export class PersonaCard extends React.Component<IPersonaCardProps,IPersonaCardS
     return (
       <React.Fragment>
         <div>
-          <Persona {...persona} size={parseInt(this.props.personaSize)} />
-          
+          <Persona {...persona} size={parseInt(this.props.personaSize)} />          
         </div>
       </React.Fragment>
     );
   }
-
-
- 
-  
 
   /**
    *

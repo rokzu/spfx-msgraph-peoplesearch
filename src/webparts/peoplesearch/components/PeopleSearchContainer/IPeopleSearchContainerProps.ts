@@ -4,6 +4,7 @@ import { ISearchService } from "../../../../services/SearchService";
 import ResultsLayoutOption from "../../../../models/ResultsLayoutOption";
 import { TemplateService } from "../../../../services/TemplateService/TemplateService";
 import SearchParameterOption from "../../../../models/SearchParameterOption";
+import SearchServiceToUse from "../../../../models/SearchServiceToUse";
 
 export interface IPeopleSearchContainerProps {
       /**
@@ -17,6 +18,8 @@ export interface IPeopleSearchContainerProps {
     searchService: ISearchService;
 
     searchParameterOption: SearchParameterOption;
+
+    searchServiceToUse: SearchServiceToUse;
 
     /**
      * Show the result count and entered keywords

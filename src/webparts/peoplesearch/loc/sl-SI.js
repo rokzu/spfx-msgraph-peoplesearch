@@ -42,5 +42,9 @@ define([], function() {
       "PersonaSizeLarge": "Velika",
       "PersonaSizeExtraLarge": "Zelo velika",
     },
+    "UseSearchEngineSettingsGroup": "Nastavitve načina iskanja",
+    "UseSearchEngine": "Kater iskalnik se uporablja",
+    "MSGraphSearchEngine": "MS Graph isklanik",
+    "SharePointSearch": "SharePoint iskalnik",
   }
 });

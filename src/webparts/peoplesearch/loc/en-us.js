@@ -42,5 +42,9 @@ define([], function() {
       "PersonaSizeLarge": "Large",
       "PersonaSizeExtraLarge": "Extra large",
     },
+    "UseSearchEngineSettingsGroup": "Search engine settings",
+    "UseSearchEngine": "Search engine to use",
+    "MSGraphSearchEngine": "MS Graph search",
+    "SharePointSearch": "SharePoint Search",
   }
 });

@@ -208,12 +208,14 @@ export class PeopleSearchContainer extends React.Component<IPeopleSearchContaine
         });
 
         let searchResults = await this.props.searchService.searchUsers();
+
         this.setState({
             results: [searchResults],
             resultCount: searchResults["@odata.count"],
             areResultsLoading: false,
             page: 1
         }, () => this._fetchPeopleProfilePictures(1));
+
       } else if (this.state.results.length === (page - 1)) {
         if (this.hasNextPage()) {
           this.setState({
@@ -260,8 +262,11 @@ export class PeopleSearchContainer extends React.Component<IPeopleSearchContaine
       
       items.value = items.value.map(u => {
         if (ids.indexOf(u.id) !== -1) {
-          u.photoUrl = pictures[u.id];
-          isUpdated = true;
+          if (pictures[u.id] != null && pictures[u.id] != "")
+          {
+            u.photoUrl = pictures[u.id];
+            isUpdated = true;
+          }
         }
         return u;
       });

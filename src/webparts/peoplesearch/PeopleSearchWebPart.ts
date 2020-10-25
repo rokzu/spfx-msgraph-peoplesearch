@@ -26,6 +26,8 @@ import { IPeopleSearchContainerProps, PeopleSearchContainer } from "./components
 import ResultsLayoutOption from "../../models/ResultsLayoutOption";
 import { TemplateService } from "../../services/TemplateService/TemplateService";
 import SearchParameterOption from "../../models/SearchParameterOption";
+import SearchServiceToUse from "../../models/SearchServiceToUse";
+import { SharePointSearchService } from "../../services/SearchService/SharePointSearchService";
 
 export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSearchWebPartProps> {
   private _searchService: ISearchService;
@@ -86,6 +88,7 @@ export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSe
           showLPC: this.properties.showLPC,
           searchParameterOption: this.properties.searchParameterOption,
           searchService: this._searchService,
+          searchServiceToUse: this.properties.searchEngineUse,
           templateService: this._templateService,
           templateParameters: this.properties.templateParameters,
           selectedLayout: this.properties.selectedLayout,
@@ -124,13 +127,9 @@ export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSe
   protected async onInit(): Promise<void> {
     this._initializeRequiredProperties();
 
-    this._initThemeVariant();
+    await this._initSearchService();
 
-    if (Environment.type === EnvironmentType.Local) {
-      this._searchService = new MockSearchService();
-    } else {
-      this._searchService = new SearchService(this.context.msGraphClientFactory);
-    }
+    this._initThemeVariant();
 
     this._templateService = new TemplateService();
 
@@ -138,6 +137,8 @@ export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSe
 
     return super.onInit();
   }
+
+
 
   protected onDispose(): void {
     ReactDom.unmountComponentAtNode(this.domElement);
@@ -152,6 +153,10 @@ export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSe
     const templateParametersGroup = this._getTemplateFieldsGroup();
 
     let propertyPaneGroups: (IPropertyPaneGroup | IPropertyPaneConditionalGroup)[] = [
+      {
+        groupName: strings.UseSearchEngineSettingsGroup,
+        groupFields: this._getSearchServiceToUse()
+      },
       {
         groupName: strings.QuerySettingsGroupName,
         groupFields: this._getQueryFields()
@@ -181,6 +186,12 @@ export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSe
   }
 
   protected async onPropertyPaneFieldChanged(propertyPath: string) {
+
+    if (propertyPath.localeCompare('searchEngineUse') === 0) {
+      await this._initSearchService();
+      this.context.propertyPane.refresh();
+    }
+
     if (propertyPath.localeCompare('selectedLayout') === 0) {
       await this._initTemplate();
       this.context.propertyPane.refresh();
@@ -200,6 +211,30 @@ export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSe
       }
     } as any as IWebPartPropertiesMetadata;
   }
+
+  private _getSearchServiceToUse(): IPropertyPaneField<any>[] {
+
+   const searchEngineOption = [
+      {
+          text: strings.MSGraphSearchEngine,
+          key: SearchServiceToUse.MSGraph
+      },
+      {
+        text: strings.SharePointSearch,
+        key: SearchServiceToUse.SharePoint,
+      }
+    ] as IPropertyPaneChoiceGroupOption[];
+
+    let searchEngineUseFields: IPropertyPaneField<any>[] = [
+      PropertyPaneChoiceGroup('searchEngineUse', {
+        label: strings.UseSearchEngine,
+        options: searchEngineOption
+      }),
+    ];
+
+    return searchEngineUseFields;
+  }
+
 
   /**
    * Determines the group fields for search query options inside the property pane
@@ -262,7 +297,7 @@ export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSe
    * Determines the group fields for query options inside the property pane
    */
   private _getQueryFields(): IPropertyPaneField<any>[] {
-    let queryFields: IPropertyPaneField<any>[] = [
+    let queryFields: IPropertyPaneField<any>[] = [      
       PropertyPaneTextField('selectParameter', {
           label: strings.SelectParameter,
           multiline: true
@@ -295,6 +330,23 @@ export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSe
    */
   private async _initTemplate(): Promise<void> {
     this._templatePropertyPaneOptions = this._templateService.getTemplateParameters(this.properties.selectedLayout, this.properties);
+  }
+
+   /**
+   * Init the search service according to the property pane current configuration
+   * @returns none
+   */
+  private async _initSearchService(): Promise<void> {    
+    if (Environment.type === EnvironmentType.Local) {
+      this._searchService = new MockSearchService();
+    } else {
+      if (this.properties.searchEngineUse == SearchServiceToUse.SharePoint){
+        this._searchService = new SharePointSearchService(this.context.spHttpClient, this.context.pageContext.web.absoluteUrl);
+      }
+      else{
+        this._searchService = new SearchService(this.context.msGraphClientFactory, this.context.pageContext.web.absoluteUrl);
+      }
+    }    
   }
 
   /**
@@ -374,6 +426,7 @@ export default class PeopleSearchWebPart extends BaseClientSideWebPart<IPeopleSe
     this.properties.selectedLayout = (this.properties.selectedLayout !== undefined && this.properties.selectedLayout !== null) ? this.properties.selectedLayout : ResultsLayoutOption.People;
     this.properties.searchParameterOption = (this.properties.searchParameterOption !== undefined && this.properties.searchParameterOption !== null) ? this.properties.searchParameterOption : SearchParameterOption.None;
     this.properties.templateParameters = this.properties.templateParameters ? this.properties.templateParameters : {};
+    this.properties.searchEngineUse = (this.properties.searchEngineUse !== undefined && this.properties.searchEngineUse !== null) ? this.properties.searchEngineUse : SearchServiceToUse.MSGraph;
   }
 
   /**

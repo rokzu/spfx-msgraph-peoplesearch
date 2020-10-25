@@ -9,6 +9,8 @@ import { IProfileImage } from "../../models/IProfileImage";
 
 export class SearchService implements ISearchService {
   private _msGraphClientFactory: MSGraphClientFactory;
+  private _spWebUrl: string;
+
   private _selectParameter: string[];
   private _filterParameter: string;
   private _orderByParameter: string;
@@ -30,8 +32,9 @@ export class SearchService implements ISearchService {
   public get pageSize(): number { return this._pageSize; }
   public set pageSize(value: number) { this._pageSize = value; }
 
-  constructor(msGraphClientFactory: MSGraphClientFactory) {
+  constructor(msGraphClientFactory: MSGraphClientFactory, spWebUrl: string) {
     this._msGraphClientFactory = msGraphClientFactory;
+    this._spWebUrl = spWebUrl;
   }
 
   public async searchUsers(): Promise<PageCollection<ExtendedUser>> {
@@ -60,7 +63,44 @@ export class SearchService implements ISearchService {
       resultQuery = resultQuery.query({ $search: `"displayName:${this.searchParameter}"` });
     }
 
-    return await resultQuery.get();
+    if (isEmpty(this.searchParameter)){
+      //do not search
+      const blankResult = '{"@odata.count":0, "@odata.nextLink":"", "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users", "value":[]}';
+      const blankResultObj = JSON.parse(blankResult) as PageCollection<ExtendedUser>;
+      return blankResultObj;
+    }
+
+    var searchResults = await resultQuery.get();
+    //sort the results
+    try{
+      let resUsers = searchResults.value;
+      let sortedUsers = resUsers.sort((n1,n2) => {
+          if (n1.surname > n2.surname) {
+              return 1;
+          }
+      
+          if (n1.surname < n2.surname) {
+              return -1;
+          }
+      
+          return 0;
+      });
+      
+      searchResults.value = [];
+      sortedUsers.forEach(userElement => {
+        let userUpn = userElement.userPrincipalName;
+        if (!isEmpty(userUpn)){
+          userElement["photoUrl"] =  `${this._spWebUrl}${"/_layouts/15/userphoto.aspx?size=M&accountname=" + userUpn}`;
+        }
+        searchResults.value.push(userElement);  
+      });
+
+      searchResults.value = sortedUsers;
+    }
+    catch(e){
+      console.error(e);
+    }
+    return searchResults;
   }
 
   public async fetchPage(pageLink: string): Promise<PageCollection<ExtendedUser>>  {
@@ -84,12 +124,34 @@ export class SearchService implements ISearchService {
     var response: IGraphBatchResponseBody = await graphClient.api('$batch').version('v1.0').post(body);
 
     var results: IProfileImage = {};
-    response.responses.forEach(r => {
-      if (r.status === 200) {
-        results[r.id] = `data:${r.headers["Content-Type"]};base64,${r.body}`;
+      
+      for (let i=0;i<response.responses.length;i++){
+        const r = response.responses[i];
+        if (r.status === 200) {
+          results[r.id] = `data:${r.headers["Content-Type"]};base64,${r.body}`;
+        }
+        else{
+          const userUpn = this._getUserUpn(users, r.id);
+          if (!isEmpty(userUpn)){
+            const photoUrl = `${this._spWebUrl}${"/_layouts/15/userphoto.aspx?size=M&accountname=" + userUpn}`;
+            results[r.id] = photoUrl;
+          }
+        }
       }
-    });
 
     return results;
+  }
+
+  // get user upn account name
+  private _getUserUpn(users: ExtendedUser[], id: string): string {
+    if (users == null || !Array.isArray(users)){
+      return null;
+    }
+
+    for (let i=0;i<users.length;i++){
+      if(users[i].id == id){
+        return users[i].userPrincipalName;
+      }
+    }
   }
 }

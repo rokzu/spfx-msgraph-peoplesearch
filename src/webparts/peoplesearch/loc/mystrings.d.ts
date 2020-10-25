@@ -40,7 +40,11 @@ declare interface IPeopleSearchWebPartStrings {
     PersonaSizeRegular: string;
     PersonaSizeLarge: string;
     PersonaSizeExtraLarge: string;
-  }
+  },
+  UseSearchEngineSettingsGroup: string
+  UseSearchEngine: string
+  MSGraphSearchEngine: string,
+  SharePointSearch: string
 }
 
 declare module 'PeopleSearchWebPartStrings' {
