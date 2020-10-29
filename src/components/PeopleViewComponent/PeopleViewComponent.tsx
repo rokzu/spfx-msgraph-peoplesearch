@@ -71,7 +71,7 @@ export class PeopleViewComponent extends React.Component<IPeopleViewProps, IPeop
             cleanNumber = cleanNumber.replace(/(\d{1})(\d{2})(\d{3})(\d{3})/,"+386 $2 $3 $4");
         }
         else{
-            cleanNumber = cleanNumber.replace(/(\d{1})(\d{1})(\d{4})(\d{3})/,"+386 $2 $3 $4");
+            cleanNumber = cleanNumber.replace(/(\d{1})(\d{1})(\d{3})(\d{2})(\d{2})/,"+386 $2 $3 $4 $5");
         }
 
         return cleanNumber;
