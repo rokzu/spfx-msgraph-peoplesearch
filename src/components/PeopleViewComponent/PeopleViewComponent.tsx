@@ -9,8 +9,12 @@ import {
     Log, Environment, EnvironmentType,
   } from '@microsoft/sp-core-library';
   import { SPComponentLoader } from '@microsoft/sp-loader';
+  import { initializeIcons } from '@uifabric/icons';
+import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 const LIVE_PERSONA_COMPONENT_ID: string = "914330ee-2df2-4f6e-a858-30c23a812408";
+
+initializeIcons();
 
 export interface IPeopleViewProps {
     templateContext: ITemplateContext;
@@ -52,6 +56,32 @@ export class PeopleViewComponent extends React.Component<IPeopleViewProps, IPeop
       }        
     }
 
+    private _formatPhoneNumber(phoneNumber: string, isMobile: boolean){
+
+        if (isEmpty(phoneNumber)){
+            return phoneNumber;
+        }
+
+        try{
+        let cleanNumber = phoneNumber.replace("+","");
+        cleanNumber = cleanNumber.replace("386","");
+        cleanNumber = cleanNumber.replace(" ","");
+
+        if (isMobile){
+            cleanNumber = cleanNumber.replace(/(\d{1})(\d{2})(\d{3})(\d{3})/,"+386 $2 $3 $4");
+        }
+        else{
+            cleanNumber = cleanNumber.replace(/(\d{1})(\d{1})(\d{4})(\d{3})/,"+386 $2 $3 $4");
+        }
+
+        return cleanNumber;
+        }
+        catch(e)
+        {
+            return phoneNumber;
+        }
+    }
+
     public render() {
         const ctx = this.props.templateContext;
         let mainElement: JSX.Element = null;
@@ -69,11 +99,78 @@ export class PeopleViewComponent extends React.Component<IPeopleViewProps, IPeop
                 paginationElement = null;
             }
 
+            const phoneNumberStyle = {
+                marginLeft:72 + 16,
+                marginTop:0
+            };
+            
+            switch (ctx.personaSize){
+                case 11:
+                    {
+                        phoneNumberStyle.marginLeft = 32 + 16;
+                        phoneNumberStyle.marginTop = 15;
+                        break;
+                    }
+                    case 12:
+                    {
+                        phoneNumberStyle.marginLeft = 40 + 16;
+                        phoneNumberStyle.marginTop = 15;
+                        break;
+                    }
+                    case 13:
+                    {
+                        phoneNumberStyle.marginLeft = 48 + 16;
+                        phoneNumberStyle.marginTop = 15;
+                        break;
+                    }
+                    case 14:
+                    {
+                        phoneNumberStyle.marginLeft = 72 + 16;
+                        phoneNumberStyle.marginTop = 15;
+                        break;
+                    }
+                    case 15:
+                    {
+                        phoneNumberStyle.marginLeft = 100 + 16;
+                        break;
+                    }
+
+
+            }
+
             const personaCards = [];
             for (let i = 0; i < ctx.items.value.length; i++) {
-                personaCards.push(<div className={styles.documentCardItem} key={i}>
+
+                //add mobile number to a separate div
+                let bussinessPhoneDiv = [];
+                let mobilePhoneDiv;
+                let phonesDiv;
+
+                const currentItem = ctx.items.value[i];
+                if (currentItem != null){
+                    if (currentItem.businessPhones != null && currentItem.businessPhones.length>0){
+                        for (let iNumber: number = 0;iNumber<currentItem.businessPhones.length;iNumber++){
+                            bussinessPhoneDiv.push(<div><Icon iconName="Phone" /> {this._formatPhoneNumber(currentItem.businessPhones[iNumber], false)}</div>);
+                        }
+                    }
+                    if (!isEmpty(currentItem.mobilePhone)){
+                        mobilePhoneDiv = (<div><Icon iconName="CellPhone" /> {this._formatPhoneNumber(currentItem.mobilePhone, true)}</div>);
+                    }
+                    phonesDiv = (
+                        <div style={phoneNumberStyle}>
+                            {bussinessPhoneDiv}
+                            {mobilePhoneDiv}
+                        </div>
+                    );
+                }
+
+                // businessPhones
+                // mobilePhone
+                personaCards.push(
+                <div className={styles.documentCardItem} key={i}>
                     <div className={styles.personaCard}>
                         <PersonaCard serviceScope={ctx.serviceScope} fieldsConfiguration={ctx.peopleFields} item={ctx.items.value[i]} themeVariant={ctx.themeVariant} personaSize={ctx.personaSize} showLPC={ctx.showLPC} lpcLibrary={this.sharedLibrary} />
+                        {phonesDiv}
                     </div>
                 </div>);
             }

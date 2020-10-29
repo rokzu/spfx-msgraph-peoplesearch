@@ -24,6 +24,7 @@
     "@microsoft/sp-webpart-base": "1.11.0",
     "@pnp/spfx-controls-react": "1.13.2",
     "@pnp/spfx-property-controls": "1.15.0",
+    "@uifabric/icons": "^7.5.14",
     "@uifabric/styling": "6.50.7",
     "gulp": "^3.9.1",
     "immutability-helper": "2.4.0",
