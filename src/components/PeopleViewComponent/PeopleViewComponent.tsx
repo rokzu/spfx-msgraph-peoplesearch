@@ -63,18 +63,22 @@ export class PeopleViewComponent extends React.Component<IPeopleViewProps, IPeop
         }
 
         try{
-        let cleanNumber = phoneNumber.replace("+","");
-        cleanNumber = cleanNumber.replace("386","");
-        cleanNumber = cleanNumber.replace(" ","");
+            let cleanNumber = phoneNumber.replace("+","").trim();
+        
+                //@ts-ignore
+            if (phoneNumber.startsWith("386")){
+                cleanNumber = cleanNumber.substr(2).trim();
+            }        
+            cleanNumber = cleanNumber.replace(" ","");
 
-        if (isMobile){
-            cleanNumber = cleanNumber.replace(/(\d{1})(\d{2})(\d{3})(\d{3})/,"+386 $2 $3 $4");
-        }
-        else{
-            cleanNumber = cleanNumber.replace(/(\d{1})(\d{1})(\d{3})(\d{2})(\d{2})/,"+386 $2 $3 $4 $5");
-        }
+            if (isMobile){
+                cleanNumber = cleanNumber.replace(/(\d{1})(\d{2})(\d{3})(\d{3})/,"+386 $2 $3 $4");
+            }
+            else{
+                cleanNumber = cleanNumber.replace(/(\d{1})(\d{1})(\d{3})(\d{2})(\d{2})/,"+386 $2 $3 $4 $5");
+            }
 
-        return cleanNumber;
+            return cleanNumber;
         }
         catch(e)
         {
@@ -107,26 +111,22 @@ export class PeopleViewComponent extends React.Component<IPeopleViewProps, IPeop
             switch (ctx.personaSize){
                 case 11:
                     {
-                        phoneNumberStyle.marginLeft = 32 + 16;
-                        phoneNumberStyle.marginTop = 15;
+                        phoneNumberStyle.marginLeft = 32 + 16;                        
                         break;
                     }
                     case 12:
                     {
-                        phoneNumberStyle.marginLeft = 40 + 16;
-                        phoneNumberStyle.marginTop = 15;
+                        phoneNumberStyle.marginLeft = 40 + 16;                        
                         break;
                     }
                     case 13:
                     {
-                        phoneNumberStyle.marginLeft = 48 + 16;
-                        phoneNumberStyle.marginTop = 15;
+                        phoneNumberStyle.marginLeft = 48 + 16;                        
                         break;
                     }
                     case 14:
                     {
-                        phoneNumberStyle.marginLeft = 72 + 16;
-                        phoneNumberStyle.marginTop = 15;
+                        phoneNumberStyle.marginLeft = 72 + 25;                        
                         break;
                     }
                     case 15:
@@ -169,9 +169,10 @@ export class PeopleViewComponent extends React.Component<IPeopleViewProps, IPeop
                 personaCards.push(
                 <div className={styles.documentCardItem} key={i}>
                     <div className={styles.personaCard}>
-                        <PersonaCard serviceScope={ctx.serviceScope} fieldsConfiguration={ctx.peopleFields} item={ctx.items.value[i]} themeVariant={ctx.themeVariant} personaSize={ctx.personaSize} showLPC={ctx.showLPC} lpcLibrary={this.sharedLibrary} />
-                        {phonesDiv}
+                        <PersonaCard serviceScope={ctx.serviceScope} fieldsConfiguration={ctx.peopleFields} item={ctx.items.value[i]} themeVariant={ctx.themeVariant} personaSize={ctx.personaSize} showLPC={ctx.showLPC} lpcLibrary={this.sharedLibrary} />                        
                     </div>
+                                        
+                    {phonesDiv}
                 </div>);
             }
 
